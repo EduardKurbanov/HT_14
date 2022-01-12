@@ -5,17 +5,19 @@ from verification_password_login import VerificationPasswordLogin
 
 class Atm(object):
 
+    def __init__(self, login):
+        self.login = login
+        self.db = DataBase()
+
     @classmethod
     def set_valid_log_pass(cls, username: str = "", password: str = "", special_key: str = ""):
         return VerificationPasswordLogin.set_verification_password_login(username, password, special_key)
 
-    @classmethod
-    def get_check_balance(cls, username: str):
-        money = DataBase.get_user_balance(str(username))
+    def get_check_balance(self):
+        money = self.db.get_user_balance(str(self.login))
         print("Balance: {0} USD".format(money))
 
-    @classmethod
-    def get_currency(cls, money: int):
+    def get_currency(self, money: int):
         requested_amount: int = money
         temp_list: list = []
         available_currency: dict = {}
@@ -25,7 +27,7 @@ class Atm(object):
             print("<value is not short 10>")
             return False
 
-        available_currency: dict = DataBase.get_available_currency()
+        available_currency: dict = self.db.get_available_currency()
 
         if int(requested_amount) > 0:
             while int(requested_amount) > 0:
@@ -113,26 +115,25 @@ class Atm(object):
             print(f"Nominal: {val} x {num}")
         print("*" * 20)
 
-        DataBase.update_available_currency(available_currency)
+        self.db.update_available_currency(available_currency)
 
         return True
 
-    @classmethod
-    def get_withdraw_balance(cls, username: str):
-        current_balance = DataBase.get_user_balance(str(username))
+    def get_withdraw_balance(self):
+        current_balance = self.db.get_user_balance(str(self.login))
 
         print("Balance: {0} USD".format(current_balance))  # for debug only
         entered_money = input("Enter amount : ")
         if entered_money.isdecimal():
             if (int(entered_money) != 0) and (int(entered_money) <= int(current_balance)):
-                check_state: bool = cls.get_currency(int(entered_money))
+                check_state: bool = self.get_currency(int(entered_money))
 
                 if check_state:
                     new_balance = int(current_balance) - int(entered_money)
                     print("Balance: {0} USD".format(new_balance))
 
-                    DataBase.set_user_balance(str(username), int(new_balance))
-                    DataBase.set_user_transaction(str(username), int(current_balance), int(new_balance))
+                    DataBase.set_user_balance(str(self.login), int(new_balance))
+                    DataBase.set_user_transaction(str(self.login), int(current_balance), int(new_balance))
                 else:
                     print("<Operation unsuccessful>")
             else:
@@ -140,9 +141,8 @@ class Atm(object):
         else:
             print("<Only digits allowed to enter>")
 
-    @classmethod
-    def get_replenish_balance(cls, username: str):
-        current_balance = DataBase.get_user_balance(str(username))
+    def get_replenish_balance(self):
+        current_balance = self.db.get_user_balance(str(self.login))
 
         print("Balance: {0} USD".format(current_balance))  # for debug only
         entered_money = input("Enter amount : ")
@@ -151,16 +151,17 @@ class Atm(object):
                 new_balance = int(current_balance) + int(entered_money)
                 print("Balance: {0} USD".format(new_balance))
 
-                DataBase.set_user_balance(str(username), int(new_balance))
-                DataBase.set_user_transaction(str(username), int(current_balance), int(new_balance))
+                self.db.set_user_balance(str(self.login), int(new_balance))
+                self.db.set_user_transaction(str(self.login), int(current_balance), int(new_balance))
             else:
                 print("<Entered incorrect amount>")
         else:
             print("<Only digits allowed to enter>")
 
-    @classmethod
-    def console_admin(cls, valid):
-        data = DataBase.get_available_currency()
+
+    def console_admin(self, valid):
+
+        data = self.db.get_available_currency()
 
         while True:
             if valid == "incasation":
@@ -183,7 +184,7 @@ class Atm(object):
                             print("not the number of bills")
                             continue
 
-                    DataBase.update_available_currency(data)
+                    self.db.update_available_currency(data)
                 elif int(menu_item) == 3:
                     exit()
                 else:
