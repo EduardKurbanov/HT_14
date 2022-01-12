@@ -45,7 +45,7 @@ def start():
                         elif int(menu_item) == 4:
                             BankRate.currency_console(valid)
                         else:
-                            DataBase.close_database()
+                            atm.db.close_database()
                             exit()
                 else:
                     count -= 1
